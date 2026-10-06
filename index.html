@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seguimiento de reserva</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;700&display=swap">
+
+<style>
+
+/* Tipografía principal UG */
+@font-face{
+  font-family:"Novecento Wide";
+  font-weight:400;
+  font-display:swap;
+  src:local("Novecento Wide Normal"),
+      url("fonts/NovecentoWide-Normal.otf") format("opentype")
+}
+
+@font-face{
+  font-family:"Novecento Wide";
+  font-weight:700;
+  font-display:swap;
+  src:local("Novecento Wide Bold"),
+      url("fonts/NovecentoWide-Bold.otf") format("opentype")
+}
+
+:root{
+  box-sizing:border-box;
+  --azul:#00325B;
+  --dorado:#9B945F;
+  --amarillo:#FDD757;
+  --amarillo-suave:#FFF6CF;
+  --bg:#F3F4F6;
+  --panel:#fff;
+  --ink:#1A1A1A;
+  --mute:#5B6470;
+  --line:#D3D8DE;
+  --todo:#9AA3AD;
+  --err:#a8322d
+}
+
+*,*::before,*::after{
+  box-sizing:inherit
+}
+
+html{
+  scroll-padding-top:env(safe-area-inset-top,0px)
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Raleway",system-ui,sans-serif;
+  line-height:1.5
+}
+
+/* ENCABEZADO */
+.banda{
+  background:var(--azul);
+  color:#fff;
+  border-bottom:4px solid var(--dorado);
+  padding:calc(14px + env(safe-area-inset-top,0px)) 18px 14px
+}
+
+.banda div{
+  max-width:720px;
+  margin:0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  position:relative
+}
+
+.escudo{
+  height:56px;
+  width:auto;
+  position:absolute;
+  left:0
+}
+
+.inst{
+  font-family:"Novecento Wide","Raleway",sans-serif;
+  font-weight:400;
+  font-size:clamp(.95rem,3.4vw,1.25rem);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  line-height:1.2;
+  text-align:center
+}
+
+/* CONTENIDO PRINCIPAL */
+main{
+  width:100%;
+  max-width:720px;
+  margin:0 auto;
+  padding:28px 18px 40px;
+  flex:1
+}
+
+/* TÍTULO CON EL MISMO TAMAÑO QUE EL ENCABEZADO */
+h1{
+  font-family:"Novecento Wide","Raleway",sans-serif;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--azul);
+  font-size:clamp(.95rem,3.4vw,1.25rem);
+  line-height:1.2;
+  margin:0 0 6px
+}
+
+.sub{
+  color:var(--mute);
+  margin:0 0 20px
+}
+
+/* BUSCADOR */
+.buscar{
+  display:flex;
+  gap:8px;
+  margin-bottom:8px
+}
+
+.buscar input{
+  flex:1;
+  min-width:0;
+  font:inherit;
+  padding:11px 14px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:var(--panel);
+  color:var(--ink)
+}
+
+.buscar button{
+  font:inherit;
+  font-weight:700;
+  padding:11px 20px;
+  border:0;
+  border-radius:6px;
+  background:var(--azul);
+  color:#fff;
+  cursor:pointer
+}
+
+.buscar button:hover{
+  background:#004577
+}
+
+.buscar input:focus-visible,
+.buscar button:focus-visible{
+  outline:3px solid var(--amarillo);
+  outline-offset:2px
+}
+
+.buscar input:focus-visible{
+  border-color:var(--azul)
+}
+
+.ayuda{
+  font-size:.85rem;
+  color:var(--mute);
+  margin:0 0 24px
+}
+
+.msg{
+  color:var(--err);
+  font-weight:500
+}
+
+/* RESUMEN */
+.resumen{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-top:4px solid var(--dorado);
+  border-radius:6px;
+  padding:16px 18px;
+  margin-bottom:30px
+}
+
+.datos{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:12px 20px;
+  margin:0 0 16px
+}
+
+.datos dt{
+  font-size:.8rem;
+  color:var(--mute)
+}
+
+.datos dd{
+  margin:0;
+  font-weight:700;
+  color:var(--azul)
+}
+
+.barra{
+  height:8px;
+  background:var(--line);
+  border-radius:4px;
+  overflow:hidden
+}
+
+.barra i{
+  display:block;
+  height:100%;
+  background:var(--azul);
+  width:0;
+  transition:width .8s ease
+}
+
+.avance{
+  margin:8px 0 0;
+  font-size:.9rem;
+  color:var(--mute)
+}
+
+/* LISTA DE ETAPAS */
+ol{
+  list-style:none;
+  margin:0;
+  padding:0;
+  position:relative
+}
+
+ol::before{
+  content:"";
+  position:absolute;
+  left:13px;
+  top:6px;
+  bottom:6px;
+  width:2px;
+  background:var(--line)
+}
+
+li{
+  position:relative;
+  padding-left:46px;
+  margin-bottom:14px
+}
+
+.punto{
+  position:absolute;
+  left:4px;
+  top:14px;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:var(--bg);
+  border:2px solid var(--todo)
+}
+
+li.hecho .punto{
+  background:var(--azul);
+  border-color:var(--azul)
+}
+
+li.hecho .punto::after{
+  content:"";
+  position:absolute;
+  left:5px;
+  top:1px;
+  width:5px;
+  height:10px;
+  border:solid #fff;
+  border-width:0 2px 2px 0;
+  transform:rotate(45deg)
+}
+
+li.actual .punto{
+  border-color:var(--dorado);
+  background:var(--amarillo);
+  box-shadow:0 0 0 5px var(--amarillo-suave)
+}
+
+button.paso{
+  all:unset;
+  display:block;
+  width:100%;
+  box-sizing:border-box;
+  cursor:pointer;
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:12px 16px
+}
+
+button.paso:focus-visible{
+  outline:3px solid var(--azul);
+  outline-offset:2px
+}
+
+li.actual button.paso{
+  border-color:var(--dorado);
+  border-width:2px;
+  padding:11px 15px
+}
+
+li.pend button.paso{
+  background:transparent;
+  border-style:dashed
+}
+
+.fila{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:baseline
+}
+
+.titulo{
+  font-weight:700;
+  color:var(--azul)
+}
+
+li.pend .titulo{
+  color:var(--mute)
+}
+
+.fecha{
+  font-size:.85rem;
+  color:var(--mute);
+  white-space:nowrap
+}
+
+.area{
+  font-size:.88rem;
+  color:var(--mute)
+}
+
+.estado{
+  display:inline-block;
+  font-size:.78rem;
+  font-weight:700;
+  padding:1px 10px;
+  border-radius:99px;
+  margin-top:6px
+}
+
+li.hecho .estado{
+  background:#E3ECF4;
+  color:var(--azul)
+}
+
+li.actual .estado{
+  background:var(--amarillo);
+  color:var(--azul)
+}
+
+li.pend .estado{
+  background:var(--line);
+  color:var(--mute)
+}
+
+.detalle{
+  display:none;
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px solid var(--line);
+  font-size:.94rem
+}
+
+li.abierto .detalle{
+  display:block
+}
+
+.detalle p{
+  margin:0
+}
+
+/* PIE */
+.pie{
+  background:var(--azul);
+  color:#fff;
+  border-top:4px solid var(--dorado);
+  text-align:center;
+  padding:14px 18px calc(14px + env(safe-area-inset-bottom,0px));
+  font-weight:500
+}
+
+@media (prefers-reduced-motion:reduce){
+  .barra i{
+    transition:none
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<header class="banda">
+  <div>
+
+    <!-- Guarda el escudo dorado oficial como escudo.png junto a este archivo -->
+
+    <img
+      class="escudo"
+      src="escudo.png"
+      alt="Escudo de la Universidad de Guanajuato"
+      onerror="this.style.display='none'"
+    >
+
+    <span class="inst">
+      División de Ingenierías CIS
+    </span>
+
+  </div>
+</header>
+
+<main>
+
+  <h1>Seguimiento de tu reserva</h1>
+
+  <p class="sub">
+    Consulta en qué etapa va tu trámite.
+  </p>
+
+  <div class="buscar">
+
+    <input
+      id="folio"
+      type="text"
+      placeholder="Escribe tu folio"
+      autocomplete="off"
+      aria-label="Folio del trámite"
+    >
+
+    <button id="ir" type="button">
+      Consultar
+    </button>
+
+  </div>
+
+  <p class="ayuda" id="ayuda">
+    Ejemplos de prueba: RS-9M3QX, RS-4K7P2, RS-2T8VD
+  </p>
+
+  <div id="salida"></div>
+
+</main>
+
+<footer class="pie">
+ Oficialía de partes
+</footer>
+
+<script>
+
+/* ===== FLUJO DE RESERVA ===== */
+
+var BASE_1=[
+  {
+    id:"memo",
+    t:"Memorándum de apoyo enviado",
+    a:"Dirección o Departamento",
+    d:"La Dirección o el Departamento envió el memorándum de apoyo, con copia al Departamento de atención y trámite."
+  },
+  {
+    id:"presup",
+    t:"Información presupuestal identificada",
+    a:"Atención y trámite",
+    d:"Se identificaron la partida presupuestal, el área funcional y el código programático."
+  },
+  {
+    id:"disp",
+    t:"Disponibilidad de recurso verificada",
+    a:"Atención y trámite",
+    d:"Se consultó en SAP si hay recurso disponible."
+  }
+];
+
+var RAMA={
+
+  reserva:[
+    {
+      id:"reserva",
+      t:"Reserva realizada",
+      a:"Atención y trámite",
+      d:"Había recurso disponible y se realizó la reserva."
+    }
+  ],
+
+  transferencia:[
+    {
+      id:"transf",
+      t:"Transferencia de recurso solicitada",
+      a:"Atención y trámite",
+      d:"No había recurso suficiente, por lo que se solicitó una transferencia. Esta gestión se hace entre 08:00 y 10:00 horas."
+    },
+    {
+      id:"guard",
+      t:"Transferencia guardada",
+      a:"Atención y trámite",
+      d:"Las transferencias se reflejan a las 10:00, 12:00 y 14:00 horas."
+    }
+  ]
+
+};
+
+var PENDIENTE_RAMA={
+  id:"rama",
+  t:"Reserva o transferencia de recurso",
+  a:"Atención y trámite",
+  d:"Según la disponibilidad, se realizará la reserva o se gestionará una transferencia de recurso."
+};
+
+var FINAL_1={
+  id:"envio",
+  t:"Reserva enviada",
+  a:"Atención y trámite",
+  d:"La reserva se envía al usuario por correo."
+};
+
+
+/* ===== DATOS DE PRUEBA ===== */
+
+var DATOS={
+
+  "RS-9M3QX":{
+    ruta:"reserva",
+    hechos:{
+      memo:"2026-09-14",
+      presup:"2026-09-14",
+      disp:"2026-09-14",
+      reserva:"2026-09-14",
+      envio:"2026-09-14"
+    }
+  },
+
+  "RS-4K7P2":{
+    ruta:"transferencia",
+    hechos:{
+      memo:"2026-09-28",
+      presup:"2026-09-28",
+      disp:"2026-09-29",
+      transf:"2026-09-29"
+    }
+  },
+
+  "RS-2T8VD":{
+    ruta:null,
+    hechos:{
+      memo:"2026-10-01",
+      presup:"2026-10-02"
+    }
+  }
+
+};
+
+
+/* ===== GOOGLE APPS SCRIPT ===== */
+
+var URL_SCRIPT="https://script.google.com/macros/s/AKfycbyd5JGK2xon3YQMOJemUpZYUnvO0adjs9KXmTwyr2ArWY5SGmLXbtunvYLyH1xyU5OPmg/exec";
+
+function obtenerTramite(folio){
+
+  if(URL_SCRIPT.indexOf("http")!==0)
+    return Promise.resolve(DATOS[folio]||null);
+
+  return fetch(
+    URL_SCRIPT+"?folio="+encodeURIComponent(folio)
+  )
+  .then(function(r){
+    return r.json()
+  })
+  .then(function(d){
+    return d&&d.ok
+      ? {ruta:d.ruta,hechos:d.hechos}
+      : null
+  });
+
+}
+
+
+/* ===== RENDER ===== */
+
+function fmt(s){
+
+  if(!s)
+    return "Por definir";
+
+  var p=s.split("-");
+
+  return new Date(
+    +p[0],
+    p[1]-1,
+    +p[2]
+  ).toLocaleDateString(
+    "es-MX",
+    {
+      day:"numeric",
+      month:"short",
+      year:"numeric"
+    }
+  );
+
+}
+
+function el(tag,cls,txt){
+
+  var n=document.createElement(tag);
+
+  if(cls)
+    n.className=cls;
+
+  if(txt!==undefined)
+    n.textContent=txt;
+
+  return n;
+
+}
+
+var ETQ={
+  hecho:"Completado",
+  actual:"En proceso",
+  pend:"Pendiente"
+};
+
+var salida=document.getElementById("salida");
+
+
+function pasosDe(t){
+
+  var lista=BASE_1.slice();
+
+  lista=lista.concat(
+    t.ruta&&RAMA[t.ruta]
+      ? RAMA[t.ruta]
+      : [PENDIENTE_RAMA]
+  );
+
+  lista.push(FINAL_1);
+
+  var actualAsignado=false;
+
+  return lista.map(function(p){
+
+    var f=t.hechos[p.id],e;
+
+    if(f)
+      e="hecho";
+    else if(!actualAsignado){
+      e="actual";
+      actualAsignado=true
+    }
+    else
+      e="pend";
+
+    return {
+      t:p.t,
+      a:p.a,
+      d:p.d,
+      f:f||"",
+      e:e
+    };
+
+  });
+
+}
+
+
+function mostrar(folio,t){
+
+  salida.textContent="";
+
+  var pasos=pasosDe(t);
+
+  var hechos=pasos.filter(
+    function(p){
+      return p.e==="hecho"
+    }
+  ).length;
+
+  var pct=Math.round(
+    hechos/pasos.length*100
+  );
+
+  var act=pasos.find(
+    function(p){
+      return p.e==="actual"
+    }
+  );
+
+  var res=el("section","resumen");
+  var dl=el("dl","datos");
+
+  [
+    ["Folio",folio],
+    [
+      "Etapa actual",
+      act ? act.t : "Trámite concluido"
+    ],
+    [
+      "Camino",
+      t.ruta==="reserva"
+        ? "Reserva directa"
+        : t.ruta==="transferencia"
+          ? "Con transferencia de recurso"
+          : "Por definir"
+    ]
+  ].forEach(function(r){
+
+    var w=el("div");
+
+    w.appendChild(
+      el("dt","",r[0])
+    );
+
+    w.appendChild(
+      el("dd","",r[1])
+    );
+
+    dl.appendChild(w);
+
+  });
+
+  res.appendChild(dl);
+
+  var b=el("div","barra");
+  var i=el("i");
+
+  b.appendChild(i);
+
+  b.setAttribute(
+    "role",
+    "progressbar"
+  );
+
+  b.setAttribute(
+    "aria-valuenow",
+    pct
+  );
+
+  b.setAttribute(
+    "aria-valuemin",
+    0
+  );
+
+  b.setAttribute(
+    "aria-valuemax",
+    100
+  );
+
+  res.appendChild(b);
+
+  res.appendChild(
+    el(
+      "p",
+      "avance",
+      hechos+" de "+pasos.length+" etapas completadas"
+    )
+  );
+
+  salida.appendChild(res);
+
+  requestAnimationFrame(function(){
+    i.style.width=pct+"%"
+  });
+
+  var ol=el("ol");
+
+  pasos.forEach(function(p){
+
+    var li=el(
+      "li",
+      p.e==="hecho"
+        ? "hecho"
+        : p.e==="actual"
+          ? "actual"
+          : "pend"
+    );
+
+    li.appendChild(
+      el("span","punto")
+    );
+
+    var btn=el(
+      "button",
+      "paso"
+    );
+
+    btn.type="button";
+
+    btn.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+
+    var f=el("div","fila");
+
+    f.appendChild(
+      el("span","titulo",p.t)
+    );
+
+    f.appendChild(
+      el("span","fecha",fmt(p.f))
+    );
+
+    btn.appendChild(f);
+
+    btn.appendChild(
+      el("div","area",p.a)
+    );
+
+    btn.appendChild(
+      el("span","estado",ETQ[p.e])
+    );
+
+    var d=el("div","detalle");
+
+    d.appendChild(
+      el("p","",p.d)
+    );
+
+    btn.appendChild(d);
+
+    btn.addEventListener(
+      "click",
+      function(){
+
+        var o=li.classList.toggle(
+          "abierto"
+        );
+
+        btn.setAttribute(
+          "aria-expanded",
+          o
+        );
+
+      }
+    );
+
+    if(p.e==="actual"){
+
+      li.classList.add("abierto");
+
+      btn.setAttribute(
+        "aria-expanded",
+        "true"
+      );
+
+    }
+
+    li.appendChild(btn);
+
+    ol.appendChild(li);
+
+  });
+
+  salida.appendChild(ol);
+
+}
+
+
+function consultar(){
+
+  var folio=document
+    .getElementById("folio")
+    .value
+    .trim()
+    .toUpperCase();
+
+  if(!folio)
+    return;
+
+  obtenerTramite(folio)
+    .then(function(t){
+
+      if(!t){
+
+        salida.textContent="";
+
+        salida.appendChild(
+          el(
+            "p",
+            "msg",
+            "No encontramos ese folio. Revisa que esté escrito igual que en tu comprobante."
+          )
+        );
+
+        return;
+
+      }
+
+      mostrar(folio,t);
+
+    })
+    .catch(function(){
+
+      salida.textContent="";
+
+      salida.appendChild(
+        el(
+          "p",
+          "msg",
+          "No pudimos consultar en este momento. Intenta de nuevo en unos minutos."
+        )
+      );
+
+    });
+
+}
+
+
+document
+  .getElementById("ir")
+  .addEventListener(
+    "click",
+    consultar
+  );
+
+document
+  .getElementById("folio")
+  .addEventListener(
+    "keydown",
+    function(e){
+
+      if(e.key==="Enter")
+        consultar();
+
+    }
+  );
+
+if(URL_SCRIPT.indexOf("http")===0)
+  document.getElementById("ayuda").style.display="none";
+
+
+/* Permite compartir un enlace directo */
+var qf=new URLSearchParams(
+  location.search
+).get("folio");
+
+if(qf){
+
+  document.getElementById(
+    "folio"
+  ).value=qf;
+
+  consultar();
+
+}
+
+</script>
+
+</body>
+</html>
